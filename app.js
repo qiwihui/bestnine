@@ -16,9 +16,9 @@ const CANVAS_SIZES = [4, 9, 16, 25]
 const DEFAULT_SIZE = 9
 const ACTIVE_CLASS = 'active'
 const HASH = window.location.hash.substr(1).split('=')
-const API_CLIENT_ID = '96553afb3bb9430d91c2d2ee9d8c5c75'
+const API_CLIENT_ID = '1741082089386595'
 const API_BASE = 'https://api.instagram.com/'
-const LOGIN_URL = `${API_BASE}oauth/authorize/?client_id=${API_CLIENT_ID}&redirect_uri=${DOMAIN}&response_type=token`
+const LOGIN_URL = `${API_BASE}oauth/authorize/?client_id=${API_CLIENT_ID}&redirect_uri=${DOMAIN}&response_type=code&scope=user_profile,user_media`
 const API_ENDPOINT = `${API_BASE}v1/users/self/media/recent/?access_token=${HASH[1]}`
 
 // Set the initial view and render the app
