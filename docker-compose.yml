@@ -12,8 +12,8 @@ services:
     env_file: 
       - .env
     command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
-    # networks:
-    #   - proxy
+    networks:
+      - proxy
 
   nginx:
     container_name: bestnine-nginx
@@ -26,14 +26,18 @@ services:
       - ./web/html:/usr/share/nginx/html
     links:
       - web:web
-    # networks:
-    #   - proxy
+    environment:
+      VIRTUAL_HOST: bestnine.qiwihui.com
+      LETSENCRYPT_HOST: bestnine.qiwihui.com
+      LETSENCRYPT_EMAIL: qwh005007@gmail.com
+    networks:
+      - proxy
 
 
 volumes:
   web-data:
 
-# networks:
-#   proxy:
-#     external:
-#       name: nginx-proxy
+networks:
+  proxy:
+    external:
+      name: nginx-proxy
