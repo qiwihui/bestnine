@@ -10,7 +10,7 @@ if (sinceParam) {
 }
 
 // Global variables
-const YEAR = sessionStorage.getItem(SINCE_KEY) ? sessionStorage.getItem(SINCE_KEY) : 2019
+const YEAR = sessionStorage.getItem(SINCE_KEY) ? sessionStorage.getItem(SINCE_KEY) : 2020
 const DOMAIN = `${window.location.origin}/`
 const CANVAS_SIZES = [4, 9, 16, 25]
 const DEFAULT_SIZE = 9
@@ -93,7 +93,7 @@ const createCollages = (media) => {
     let canvas = document.getElementById(`js-canvas--${canvasSize}`)
     const context = canvas.getContext('2d')
     const gridNum = Math.sqrt(canvasSize)
-    const numLikes = media.slice(0, canvasSize).reduce((total, item) => (total += item.likes.count), 0)
+    // const numLikes = media.slice(0, canvasSize).reduce((total, item) => (total += 1), 0)
     const imageWidth = Math.floor(750 / gridNum)
     const canvasWidth = (imageWidth * gridNum) + ((gridNum - 1) * gutterWidth)
 
@@ -106,6 +106,9 @@ const createCollages = (media) => {
 
     for (let i = 0; i < canvasSize; i++) {
       const item = media[i]
+      if (typeof item === "undefined") {
+        continue
+      }
       const col = i % gridNum
       const row = Math.floor(i / gridNum)
       const posX =(imageWidth * col) + (gutterWidth * col)
@@ -140,9 +143,8 @@ const getPostsFromYear = (endpoint, year, media = []) => {
 
       const updatedMedia = media
         .concat(newMedia)
-        .sort((a, b) => b.likes.count - a.likes.count || b.comments.count - a.comments.count)
+        // .sort((a, b) => b.likes.count - a.likes.count || b.comments.count - a.comments.count)
         .splice(0, 25)
-
       if (moreResults) {
         return getPostsFromYear(paging.next, year, updatedMedia)
       }
