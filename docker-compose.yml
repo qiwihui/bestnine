@@ -20,7 +20,9 @@ services:
     restart: always
     image: nginx:latest
     ports:
-      - "127.0.0.1:8000:80"
+      - "127.0.0.1:3080:80"
+    expose:
+      - "80"
     volumes:
       - ./nginx/bestnine.conf:/etc/nginx/conf.d/default.conf
       - ./web/html:/usr/share/nginx/html
@@ -30,6 +32,8 @@ services:
       VIRTUAL_HOST: bestnine.qiwihui.com
       LETSENCRYPT_HOST: bestnine.qiwihui.com
       LETSENCRYPT_EMAIL: qwh005007@gmail.com
+      VIRTUAL_PORT: "80"
+      HTTPS_METHOD: redirect
     networks:
       - proxy
 
