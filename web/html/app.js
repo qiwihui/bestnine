@@ -22,14 +22,13 @@ const API_BASE = 'https://api.instagram.com/'
 const LOGIN_URL = `${API_BASE}oauth/authorize/?client_id=${API_CLIENT_ID}&redirect_uri=${DOMAIN}&response_type=code&scope=user_profile,user_media`
 const ACCESS_TOEKN_URL = `${API_BASE}oauth/access_token`
 var ACCESS_TOKEN = ''
-const API_ENDPOINT = `${API_BASE}v1/users/self/media/recent/?access_token=${ACCESS_TOKEN}`
 
 // Set the initial view and render the app
 window.onload = () => {
   if (HASH[0] === 'code') {
-    ACCESS_TOKEN = getAccessToken(HASH[1])
-    console.log(ACCESS_TOKEN)
-    renderView('loading', callbackPics)
+    getAccessToken(HASH[1])
+    // console.log(ACCESS_TOKEN)
+    // renderView('loading', callbackPics)
     history.replaceState('', document.title, DOMAIN)
     return true
   }
@@ -64,26 +63,26 @@ const callbackPics = () => {
 
 const getAccessToken = (code) => {
   let formData = new FormData();
-  formData.append('client_id', `${API_CLIENT_ID}`);
-  formData.append('client_secret', `${API_CLIENT_SECRET}`);
-  formData.append('grant_type', 'authorization_code');
-  formData.append('redirect_uri', `${DOMAIN}`);
   formData.append('code', code);
-  return fetch(ACCESS_TOEKN_URL, {
+  return fetch('/api/access_token', {
     method: 'POST',
     headers: {
-      // 'Accept': 'application/json',
-      // 'Content-Type': 'application/json',
-      'Origin': `${DOMAIN}`
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
     },
-    body: formData
+    body: JSON.stringify({code: code})
   })
   .then(response => response.json())
-  .then(({access_token, use_id}) => {return access_token})
+  .then(({status, data}) => {
+    console.log(data)
+    ACCESS_TOKEN = data.token.access_token;
+    renderView('loading', callbackPics)
+  })
   .catch(displayError)
 }
 
 const fetchMedia = () => {
+  const API_ENDPOINT = `${API_BASE}v1/users/17841401701881980/media/?access_token=${ACCESS_TOKEN}`
   return new Promise((resolve, reject) => {
     getPostsFromYear(API_ENDPOINT, YEAR).then(response => resolve(response))
   })
