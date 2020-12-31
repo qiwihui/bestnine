@@ -17,8 +17,8 @@ const DEFAULT_SIZE = 9
 const ACTIVE_CLASS = 'active'
 const HASH = window.location.search.substr(1).split('=')
 const API_CLIENT_ID = '1741082089386595'
-const API_CLIENT_SECRET = 'edbfc4738c13816753742787ac7a3e51'
 const API_BASE = 'https://api.instagram.com/'
+const GRAPH_API_BASE = 'https://graph.instagram.com/'
 const LOGIN_URL = `${API_BASE}oauth/authorize/?client_id=${API_CLIENT_ID}&redirect_uri=${DOMAIN}&response_type=code&scope=user_profile,user_media`
 const ACCESS_TOEKN_URL = `${API_BASE}oauth/access_token`
 var ACCESS_TOKEN = ''
@@ -27,8 +27,6 @@ var ACCESS_TOKEN = ''
 window.onload = () => {
   if (HASH[0] === 'code') {
     getAccessToken(HASH[1])
-    // console.log(ACCESS_TOKEN)
-    // renderView('loading', callbackPics)
     history.replaceState('', document.title, DOMAIN)
     return true
   }
@@ -74,7 +72,6 @@ const getAccessToken = (code) => {
   })
   .then(response => response.json())
   .then(({status, data}) => {
-    console.log(data)
     ACCESS_TOKEN = data.token.access_token;
     renderView('loading', callbackPics)
   })
@@ -82,7 +79,7 @@ const getAccessToken = (code) => {
 }
 
 const fetchMedia = () => {
-  const API_ENDPOINT = `${API_BASE}v1/users/17841401701881980/media/?access_token=${ACCESS_TOKEN}`
+  const API_ENDPOINT = `${GRAPH_API_BASE}me/media/?fields=fields=id,media_type,media_url,permalink,thumbnail_url,timestamp,username&access_token=${ACCESS_TOKEN}`
   return new Promise((resolve, reject) => {
     getPostsFromYear(API_ENDPOINT, YEAR).then(response => resolve(response))
   })
@@ -113,7 +110,7 @@ const createCollages = (media) => {
       const row = Math.floor(i / gridNum)
       const posX =(imageWidth * col) + (gutterWidth * col)
       const posY = (imageWidth * row) + (gutterWidth * row)
-      imagePromises.push(addMedia(context, item.images.standard_resolution.url, posX, posY, imageWidth))
+      imagePromises.push(addMedia(context, item.media_url, posX, posY, imageWidth))
     }
   })
 
@@ -136,10 +133,10 @@ const displayCollages = () => {
 const getPostsFromYear = (endpoint, year, media = []) => {
   return fetch(endpoint)
     .then(response => response.json())
-    .then(({data, pagination}) => {
-      const lastMediaYear = getMediaYear(data[data.length - 1].created_time)
-      const moreResults = pagination.next_url && lastMediaYear > year - 1
-      const newMedia = data.filter(media => getMediaYear(media.created_time) === year)
+    .then(({data, paging}) => {
+      const lastMediaYear = getMediaYear(data[data.length - 1].timestamp)
+      const moreResults = paging.next && lastMediaYear > year - 1
+      const newMedia = data.filter(media => getMediaYear(media.timestamp) === year)
 
       const updatedMedia = media
         .concat(newMedia)
@@ -147,7 +144,7 @@ const getPostsFromYear = (endpoint, year, media = []) => {
         .splice(0, 25)
 
       if (moreResults) {
-        return getPostsFromYear(pagination.next_url, year, updatedMedia)
+        return getPostsFromYear(paging.next, year, updatedMedia)
       }
 
       return updatedMedia
@@ -193,7 +190,7 @@ const addMedia = (ctx, url, posX, posY, w) => {
   })
 }
 
-const getMediaYear = date => new Date(date * 1000).getFullYear()
+const getMediaYear = date => new Date(date).getFullYear()
 
 const updateDownloadLinks = (num) => {
   Array.from(document.querySelectorAll('.js-download')).forEach(el => {
